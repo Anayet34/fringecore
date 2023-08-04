@@ -1,4 +1,3 @@
-// App.js
 import React, { createContext, useState } from 'react';
 import ColorBox from './ColorBox/ColorBox';
 
@@ -15,6 +14,10 @@ const App = () => {
   ]);
 
   const splitColorBox = (type, id) => {
+    const selectedBoxIndex = colorBoxes.findIndex((box) => box.id === id);
+    if (selectedBoxIndex === -1) return;
+
+    const selectedBox = colorBoxes[selectedBoxIndex];
     const newColor = getRandomColor();
     const newBox = {
       id: Date.now(),
@@ -23,17 +26,27 @@ const App = () => {
       orientation: type === 'vertical' ? 'horizontal' : 'vertical',
     };
 
-    setColorBoxes((prevColorBoxes) =>
-      prevColorBoxes.map((box) =>
-        box.id === id
-          ? { ...box, isSplittable: false }
-          : { ...box, isSplittable: true }
-      ).concat(newBox)
-    );
+    selectedBox.isSplittable = false;
+
+    if (type === 'vertical') {
+      setColorBoxes([
+        ...colorBoxes.slice(0, selectedBoxIndex),
+        newBox,
+        { ...selectedBox, id: Date.now() + 1, orientation: 'horizontal', isSplittable: true },
+        ...colorBoxes.slice(selectedBoxIndex + 1),
+      ]);
+    } else if (type === 'horizontal') {
+      setColorBoxes([
+        ...colorBoxes.slice(0, selectedBoxIndex),
+        { ...selectedBox, id: Date.now() + 1, orientation: 'vertical', isSplittable: true },
+        newBox,
+        ...colorBoxes.slice(selectedBoxIndex + 1),
+      ]);
+    }
   };
 
   const removeColorBox = (id) => {
-    setColorBoxes((prevColorBoxes) => prevColorBoxes.filter((box) => box.id !== id));
+    setColorBoxes(colorBoxes.filter((box) => box.id !== id));
   };
 
   return (
